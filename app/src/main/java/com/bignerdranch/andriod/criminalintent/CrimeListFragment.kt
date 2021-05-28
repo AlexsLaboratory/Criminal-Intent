@@ -1,6 +1,7 @@
 package com.bignerdranch.andriod.criminalintent
 
 import android.os.Bundle
+import android.text.format.DateFormat
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -62,7 +63,8 @@ class CrimeListFragment : Fragment() {
     fun bind(crime: Crime) {
       this.crime = crime
       titleTextView.text = this.crime.title
-      dateTextView.text = this.crime.date.toString()
+      val dateString = DateFormat.getMediumDateFormat(context).format(this.crime.date)
+      dateTextView.text = dateString
       solvedImageView.visibility = if (crime.isSolved) {
         View.VISIBLE
       } else {
