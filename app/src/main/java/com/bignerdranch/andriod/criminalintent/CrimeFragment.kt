@@ -2,12 +2,14 @@ package com.bignerdranch.andriod.criminalintent
 
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.content.pm.PackageManager.*
 import android.content.pm.ResolveInfo
 import android.os.Bundle
 import android.provider.ContactsContract
 import android.text.Editable
 import android.text.TextWatcher
 import android.text.format.DateFormat
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -46,7 +48,7 @@ class CrimeFragment : Fragment(), FragmentResultListener {
     val crimeId: UUID = arguments?.getSerializable(ARG_CRIME_ID) as UUID
     crimeDetailViewModel.loadCrime(crimeId)
 
-    pickContact = registerForActivityResult(ActivityResultContracts.PickContact()) {result ->
+    pickContact = registerForActivityResult(ActivityResultContracts.PickContact()) { result ->
       val queryFields = arrayOf(ContactsContract.Contacts.DISPLAY_NAME)
       val cursor = result?.let {
         requireActivity().contentResolver
@@ -135,14 +137,6 @@ class CrimeFragment : Fragment(), FragmentResultListener {
 
       setOnClickListener {
         pickContact.launch(null)
-      }
-
-      val packageManager: PackageManager = requireActivity().packageManager
-      val resolvedActivity: ResolveInfo? =
-        packageManager.resolveActivity(pickContactIntent,
-          PackageManager.MATCH_DEFAULT_ONLY)
-      if (resolvedActivity == null) {
-        isEnabled = false
       }
     }
   }
