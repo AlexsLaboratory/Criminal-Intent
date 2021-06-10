@@ -2,18 +2,13 @@ package com.bignerdranch.andriod.criminalintent
 
 import android.Manifest
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.content.pm.PackageManager.*
-import android.content.pm.ResolveInfo
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
 import android.provider.ContactsContract
-import android.provider.MediaStore
 import android.text.Editable
 import android.text.TextWatcher
 import android.text.format.DateFormat
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -25,7 +20,6 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentResultListener
 import androidx.lifecycle.ViewModelProvider
 import java.io.File
-import java.text.SimpleDateFormat
 import java.util.*
 
 private const val TAG = "CrimeFragment"
@@ -52,29 +46,10 @@ class CrimeFragment : Fragment(), FragmentResultListener {
     ViewModelProvider(this).get(CrimeDetailViewModel::class.java)
   }
 
-  fun createImageFile(): File {
-    val timeStamp = SimpleDateFormat.getDateTimeInstance().format(Date())
-    val storageDir = photoFile
-
-    return File.createTempFile(
-      "JPEG_${timeStamp}_",
-      ".jpg",
-      storageDir
-    )
-  }
+  private var permMap: MutableMap<String, Boolean> = mutableMapOf()
 
   private val requestMultiplePermissionLauncher =
-    registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { resultsMap ->
-      resultsMap.forEach {
-        if (!it.value) {
-          Toast.makeText(
-            context,
-            String.format("Permission: %s, granted: false", it.key),
-            Toast.LENGTH_SHORT
-          ).show()
-        }
-      }
-    }
+    registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {}
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -158,6 +133,7 @@ class CrimeFragment : Fragment(), FragmentResultListener {
       override fun afterTextChanged(s: Editable?) {
       }
     }
+
     titleField.addTextChangedListener(titleWatcher)
 
     solvedCheckBox.setOnCheckedChangeListener { _, isChecked ->
@@ -181,35 +157,35 @@ class CrimeFragment : Fragment(), FragmentResultListener {
       }
     }
 
-    suspectButton.apply {
-      val packageManager: PackageManager = requireActivity().packageManager
-      val pickContactIntent = Intent(Intent.ACTION_PICK, ContactsContract.Contacts.CONTENT_URI)
-      if (pickContactIntent.resolveActivity(packageManager) == null) {
-        isEnabled = false
-      }
+    val contactsPermissions: Array<String> = arrayOf(Manifest.permission.READ_CONTACTS)
 
+    suspectButton.apply {
+      isEnabled = true
       setOnClickListener {
-        pickContact.launch(null)
+        requestMultiplePermissionLauncher.launch(contactsPermissions)
+
+        if (isEnabledPermissions(requireContext(), contactsPermissions)) {
+          pickContact.launch(null)
+        } else {
+          isEnabled = false
+        }
       }
     }
 
+    val cameraPerms: Array<String> = arrayOf(
+      Manifest.permission.WRITE_EXTERNAL_STORAGE,
+      Manifest.permission.CAMERA,
+    )
+
     photoButton.apply {
-      val packageManager: PackageManager = requireActivity().packageManager
-
-      val captureImage = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-
-      if (captureImage.resolveActivity(packageManager) == null) {
-        isEnabled = false
-      }
-
+      isEnabled = true
       setOnClickListener {
-        requestMultiplePermissionLauncher.launch(
-          arrayOf(
-            Manifest.permission.WRITE_EXTERNAL_STORAGE,
-            Manifest.permission.CAMERA
-          )
-        )
-        pickImage.launch(photoUri)
+        requestMultiplePermissionLauncher.launch(cameraPerms)
+        if (isEnabledPermissions(requireContext(), cameraPerms)) {
+          pickImage.launch(photoUri)
+        } else {
+          isEnabled = false
+        }
       }
     }
   }

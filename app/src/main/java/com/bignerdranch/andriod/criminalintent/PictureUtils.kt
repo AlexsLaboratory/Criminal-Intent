@@ -4,8 +4,6 @@ import android.app.Activity
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Point
-import android.os.Build
-import androidx.annotation.RequiresApi
 
 fun getScaledBitmap(path: String, activity: Activity): Bitmap {
   val size = Point()
