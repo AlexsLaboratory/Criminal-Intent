@@ -229,7 +229,7 @@ class CrimeFragment : Fragment(), FragmentResultListener {
     val suspect = if (crime.suspect.isBlank()) {
       getString(R.string.crime_report_no_suspect)
     } else {
-      getString(R.string.crime_report)
+      getString(R.string.crime_report_suspect, crime.suspect)
     }
 
     return getString(R.string.crime_report, crime.title, dateString, solvedString, suspect)
